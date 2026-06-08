@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.so
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Secrets & runtime data - NEVER commit
+.env
+*.env
+cookies/
+*.json
+
+# Logs
+logs/
+*.log
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Agent workspace (NEVER commit)
+.mavis/
+.opencode/
+aca13_exam_outline.pdf
+scratchpad.md
