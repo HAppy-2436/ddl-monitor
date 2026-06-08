@@ -76,6 +76,11 @@ def _split_date_time(s: str) -> tuple[str, str | None]:
         # 归一化时间为 HH:MM
         time_str = m.group(2).replace('点', ':').replace('分', '')
         return (m.group(1), time_str)
+    # 中文 '6月11日16:00' / '6月11日 16:00' (中文日期+时间, 可无空格)
+    m = re.match(r'^(\d{1,2}月\d{1,2}日)\s*(\d{1,2}[:点]\d{1,2}(?:分?)?)$', s)
+    if m:
+        time_str = m.group(2).replace('点', ':').replace('分', '')
+        return (m.group(1), time_str)
     # 空格分隔
     parts = s.split()
     if len(parts) == 1:
@@ -207,6 +212,8 @@ def _self_test():
         ("6-15", dt.datetime(2026, 6, 15, 23, 59)),
         ("2026-06-15T14:00:00", dt.datetime(2026, 6, 15, 14, 0)),  # ISO 格式
         ("2026-06-15T14:00", dt.datetime(2026, 6, 15, 14, 0)),     # ISO 短格式
+        ("6月15日14:00", dt.datetime(2026, 6, 15, 14, 0)),          # 中文紧凑 (无空格)
+        ("6月15日 14:00", dt.datetime(2026, 6, 15, 14, 0)),         # 中文空格
     ]
     fail = 0
     for s, expected in cases:
