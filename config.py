@@ -23,11 +23,17 @@ GMAIL_APP_PASSWORD = os.environ.get('GMAIL_APP_PASSWORD', '')
 # QQ 邮箱收件地址
 QQ_MAIL = os.environ.get('QQ_MAIL', '2357356249@qq.com')
 
+# 编程帮 (mynereus) 登录凭据 - 用于 cookies 失效时重登
+MYNEREUS_USERNAME = os.environ.get('MYNEREUS_USERNAME', '')
+MYNEREUS_PASSWORD = os.environ.get('MYNEREUS_PASSWORD', '')
+MYNEREUS_COOKIE = BASE_DIR / 'cookies' / 'mynereus.json'
+
 # SMTP / IMAP
 SMTP_HOST = 'smtp.gmail.com'
 SMTP_PORT = 587
 IMAP_HOST = 'imap.gmail.com'
 IMAP_PORT = 993
+
 
 # 凭据缺失检查
 def check_credentials():
@@ -53,4 +59,4 @@ if __name__ == "__main__":
     print(f"QQ_MAIL: {QQ_MAIL}")
     print(f"SMTP: {SMTP_HOST}:{SMTP_PORT}")
     print(f"IMAP: {IMAP_HOST}:{IMAP_PORT}")
-    print(f"凭据完整 ✓")
+    print("凭据完整 ✓")
