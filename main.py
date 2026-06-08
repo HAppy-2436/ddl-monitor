@@ -16,10 +16,16 @@
 """
 import sys
 import datetime as dt
-import fcntl
 import os
 from pathlib import Path
 from collections import defaultdict
+
+# fcntl Windows 没有 (本地开发), Linux 服务器有
+try:
+    import fcntl
+    HAS_FCNTL = True
+except ImportError:
+    HAS_FCNTL = False
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -136,17 +142,20 @@ def main():
     print(f"[main] tick @ {now.strftime('%Y-%m-%d %H:%M:%S')}", flush=True)
 
     # 0. 文件锁 (防并发)
-    try:
-        lock_fd = os.open(str(MAIN_LOCK), os.O_CREAT | os.O_RDWR, 0o644)
-        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except (BlockingIOError, OSError):
-        # 有别的 main 在跑, 跳过
-        print(f"[main] 已有 main 在跑, 跳过本次", flush=True)
+    if HAS_FCNTL:
         try:
-            os.close(lock_fd)
-        except Exception:
-            pass
-        return
+            lock_fd = os.open(str(MAIN_LOCK), os.O_CREAT | os.O_RDWR, 0o644)
+            fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except (BlockingIOError, OSError):
+            # 有别的 main 在跑, 跳过
+            print(f"[main] 已有 main 在跑, 跳过本次", flush=True)
+            try:
+                os.close(lock_fd)
+            except Exception:
+                pass
+            return
+    else:
+        lock_fd = None
 
     try:
         # 1. 处理指令邮件
@@ -174,11 +183,12 @@ def main():
         # 3. 保存 sent_log
         state_io.save_sent_log(sent_log)
     finally:
-        try:
-            fcntl.flock(lock_fd, fcntl.LOCK_UN)
-            os.close(lock_fd)
-        except Exception:
-            pass
+        if HAS_FCNTL and lock_fd is not None:
+            try:
+                fcntl.flock(lock_fd, fcntl.LOCK_UN)
+                os.close(lock_fd)
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":

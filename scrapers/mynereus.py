@@ -48,7 +48,7 @@ def _parse_time(s: str) -> dt.datetime:
 
 
 def _is_logged_in(page) -> bool:
-    """判断是否登录: 菜单不含"登录""""
+    """判断是否登录: 菜单不含'登录'"""
     try:
         # 看页面源码是否有"个人头像" / "退出" / "班级详情" 等登录标志
         content = page.content()
