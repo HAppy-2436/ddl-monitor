@@ -130,6 +130,11 @@ def list_all() -> List[Dict]:
     return sorted(items, key=parse)
 
 
+def list_all_dict() -> Dict[str, Dict]:
+    """列出所有手动 DDL, dict 格式 (给 scrape 重算 schedule 用)"""
+    return state_io.load_manual_ddls()
+
+
 def parse_kv_body(body: str) -> Dict[str, str]:
     """解析 add 邮件的正文 'key: value' 格式"""
     out = {}
