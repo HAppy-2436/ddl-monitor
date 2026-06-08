@@ -48,12 +48,17 @@ def _parse_time(s: str) -> dt.datetime:
 
 
 def _is_logged_in(page) -> bool:
-    """判断是否登录: 菜单不含'登录'"""
+    """判断是否登录: 登录 dialog 不在 + 出现用户头像"""
     try:
-        # 看页面源码是否有"个人头像" / "退出" / "班级详情" 等登录标志
-        content = page.content()
-        # 简单判断: 含 "_PC_(注:编程帮)" 或 "退出" 视为登录
-        return ('退出' in content or '_PC_' in content or '班级详情' in content)
+        # 1) 登录 dialog 不可见 (登录后会隐藏/消失)
+        dialog = page.locator(".el-dialog").first
+        try:
+            dialog_visible = dialog.is_visible() if dialog.count() > 0 else False
+        except Exception:
+            dialog_visible = True  # 出错时保守视为还可见 (未登录)
+        # 2) 出现 el-icon-user (登录后右上角用户头像)
+        has_user_icon = page.evaluate('() => !!document.querySelector(".el-icon-user")')
+        return (not dialog_visible) and has_user_icon
     except Exception:
         return False
 

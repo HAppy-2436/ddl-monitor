@@ -51,15 +51,18 @@ def main():
         log(f"[7] cookies count: {len(cookies)}")
         for c in cookies:
             log(f"  - {c.get('name')}={c.get('value','')[:30]} domain={c.get('domain')}")
-        menu_items = page.evaluate('() => Array.from(document.querySelectorAll(".el-menu-item")).map(e => e.innerText.trim())')
-        log(f"[8] menu: {menu_items}")
-        log(f"[8.1] menu raw repr: {repr(menu_items)}")
-        # mynereus 用 localStorage 不是 cookie. 登录成功的标志: menu 里没有"登录"
-        login_ok = '登录' not in menu_items
-        log(f"[8.2] '登录' in menu_items: {'登录' in menu_items}")
+        # 登录成功标志: 登录 dialog 不再可见 (顶层菜单不会因登录改变, 不能用它判断)
+        try:
+            dialog_still_visible = dialog.is_visible()
+        except Exception:
+            dialog_still_visible = True  # 出错时保守视为未消失
+        # 兜底: 检查页面里是否出现 el-icon-user (登录后的用户头像)
+        has_user_icon = page.evaluate('() => !!document.querySelector(".el-icon-user")')
+        login_ok = (not dialog_still_visible) and has_user_icon
+        log(f"[8] dialog 仍可见: {dialog_still_visible}, 有 el-icon-user: {has_user_icon}")
         log(f"[9] login_ok: {login_ok}")
         if not login_ok:
-            raise SystemExit("登录未成功")
+            raise SystemExit("登录未成功 (dialog 仍可见或缺用户头像)")
         ctx.storage_state(path=str(config.MYNEREUS_COOKIE))
         log(f"[10] storage_state 落盘")
         browser.close()
